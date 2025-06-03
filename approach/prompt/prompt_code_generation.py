@@ -1,6 +1,4 @@
-# school:JXNU
-# author:zouzhou
-# createTime: 2025/5/12 19:00
+﻿
 
 def prompt_code_generation(requirement, API_documentation, pseudocode, API_key, type, url, requirement_gherkin):
     if type == "rest":

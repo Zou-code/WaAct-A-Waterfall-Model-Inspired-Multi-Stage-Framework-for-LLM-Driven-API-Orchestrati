@@ -1,6 +1,4 @@
-# school:JXNU
-# author:zouzhou
-# createTime: 2025/5/12 17:44
+
 
 def prompt_task_plan(requirement, requirement_gherkin, available_API):
     prompt = """\

@@ -1,6 +1,4 @@
-# school:JXNU
-# author:zouzhou
-# createTime: 2025/5/12 19:00
+﻿
 
 from prompt.prompt_code_generation import prompt_code_generation
 import yaml

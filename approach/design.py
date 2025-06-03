@@ -1,6 +1,4 @@
-# school:JXNU
-# author:zouzhou
-# createTime: 2025/5/12 16:31
+﻿
 
 import yaml
 from pathlib import Path

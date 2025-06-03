@@ -1,6 +1,4 @@
-# school:JXNU
-# author:zouzhou
-# createTime: 2025/5/20 16:13
+﻿
 import json
 import re
 import pandas as pd

@@ -1,6 +1,4 @@
-# school:JXNU
-# author:zouzhou
-# createTime: 2025/5/12 16:22
+﻿
 import pandas as pd
 
 from requirement import RequirementAnalysis

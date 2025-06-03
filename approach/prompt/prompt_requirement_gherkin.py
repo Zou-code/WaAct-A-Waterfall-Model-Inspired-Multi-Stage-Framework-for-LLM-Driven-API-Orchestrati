@@ -1,6 +1,3 @@
-# school:JXNU
-# author:zouzhou
-# createTime: 2025/5/12 15:03
 
 def prompt_requirement_gherkin(requirement):
     prompt = """\

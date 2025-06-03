@@ -1,6 +1,4 @@
-# school:JXNU
-# author:zouzhou
-# createTime: 2025/5/12 15:47
+﻿
 
 from prompt.prompt_requirement_gherkin import prompt_requirement_gherkin
 from prompt.prompt_clarifying_question_generation import prompt_clarifying_question_generation

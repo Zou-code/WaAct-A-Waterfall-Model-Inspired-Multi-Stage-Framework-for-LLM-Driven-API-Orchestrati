@@ -1,7 +1,4 @@
-# # school:JXNU
-# # author:zouzhou
-# # createTime: 2025/5/12 14:59
-#
+﻿
 import requests
 
 # url = "https://api.themoviedb.org/3/movie/11"

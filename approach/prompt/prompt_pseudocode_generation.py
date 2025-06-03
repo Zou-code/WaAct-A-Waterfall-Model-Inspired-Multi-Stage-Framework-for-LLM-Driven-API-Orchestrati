@@ -1,6 +1,4 @@
-# school:JXNU
-# author:zouzhou
-# createTime: 2025/5/12 18:33
+﻿
 
 def prompt_pseudocode_generation(requirement,requirement_gherkin,API_documentation):
 #     prompt = '''\

@@ -1,6 +1,4 @@
-# school:JXNU
-# author:zouzhou
-# createTime: 2025/5/12 14:00
+﻿
 
 """提取API的json文件中的关键信息，保存到一个csv文件中"""
 

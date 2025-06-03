@@ -1,6 +1,4 @@
-# school:JXNU
-# author:zouzhou
-# createTime: 2025/5/22 15:23
+
 import json
 
 from prompt.prompt_accept import prompt_accept

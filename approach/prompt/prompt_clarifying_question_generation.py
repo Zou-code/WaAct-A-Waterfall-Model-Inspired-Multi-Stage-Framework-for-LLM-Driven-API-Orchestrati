@@ -1,6 +1,4 @@
-# school:JXNU
-# author:zouzhou
-# createTime: 2025/5/20 20:17
+
 
 def prompt_clarifying_question_generation(requirement):
     prompt = '''\
