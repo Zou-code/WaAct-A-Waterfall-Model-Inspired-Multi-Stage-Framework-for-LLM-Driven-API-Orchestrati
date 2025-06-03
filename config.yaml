@@ -1,0 +1,12 @@
+API Key:
+  openai: " "
+  deepseek: ""
+  tmdb: ""
+  spotify: ""
+
+file path:
+  requirement_tmdb_path: "/data/restbench/requirement_tmdb.csv"
+  requirement_spotify_path: "/data/restbench/requirement_spotify.csv"
+  apis_tmdb_path: "/data/restbench/apis/tmdb.csv"
+  apis_spotify_path: "/data/restbench/apis/spotify.csv"
+
