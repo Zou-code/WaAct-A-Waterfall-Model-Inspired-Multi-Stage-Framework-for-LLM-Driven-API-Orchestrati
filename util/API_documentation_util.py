@@ -1,4 +1,6 @@
-﻿
+﻿# school:JXNU
+# author:zouzhou
+# createTime: 2025/5/20 16:13
 import json
 import re
 import pandas as pd
@@ -82,6 +84,54 @@ response_schema: {row["response_schema"]}'''
                     API_documentation += APIs_temp
         return API_documentation
 
+    @staticmethod
+    def get_API_documentation_pseudocode_fix(task_plan,API_type):
+        """
+        获取用于伪代码修复的API文档，包括主API和Alternative API
+        :param task_plan:
+        :param API_type:
+        :return:
+        """
+        df_apis = pd.DataFrame()
+        if API_type == "tmdb":
+            df_apis = API_util.df_tmdb
+        elif API_type == "spotify":
+            df_apis = API_util.df_spotify
+
+        # 获取task_plan中的主API,并进行去重
+        task_plan = re.sub(r'^```json\s*|\s*```$', '', task_plan, flags=re.MULTILINE)
+        task_plan = json.loads(task_plan)
+        all_apis = set()
+        # for item in task_plan:
+        #     primary_API = item.get("Primary API")
+        #     if primary_API:
+        #         primary_APIs.add(primary_API)
+
+        for item in task_plan:
+            # 添加Primary API
+            primary_api = item.get("Primary API")
+            if primary_api:
+                all_apis.add(primary_api)
+
+            # 添加Alternative APIs
+            alternative_apis = item.get("Alternative APIs", [])
+            for api in alternative_apis:
+                if api:  # 确保API不为空
+                    all_apis.add(api)
+
+        API_documentation = ''''''
+        for API_name in all_apis:
+            for _, row in df_apis.iterrows():
+                if row["endpoint_name"] == API_name:
+                    APIs_temp = f'''
+
+        endpoint name: {row["endpoint_name"]}
+        description: {row["endpoint_description"]}
+        parameters: {row["parameters"]}'''
+                    API_documentation += APIs_temp
+        return API_documentation
+
+
 if __name__ == '__main__':
     task_plan = '''[
   {
@@ -105,9 +155,9 @@ if __name__ == '__main__':
     "Alternative APIs": []
   }
 ]'''
-    print(API_util.get_documentation_design(task_plan,"tmdb"))
+    print(API_util.get_API_documentation_pseudocode_fix(task_plan,"tmdb"))
     print("##################################")
-    print(API_util.get_documentation_design_implementation(task_plan,"tmdb"))
+    # print(API_util.get_documentation_design_implementation(task_plan,"tmdb"))
 
 
 

@@ -1,158 +1,120 @@
-﻿
+﻿# school:JXNU
+# author:zouzhou
+# createTime: 2025/5/12 16:22
 import pandas as pd
 
 from requirement import RequirementAnalysis
 from design import Design
 from implementation import Implementation
 from acceptance import Acceptance
+from Debugging import Debugging
 import re
 import json
 from util.API_documentation_util import API_util
+import logging
+import time
 
-# TODO 添加log部分的代码
+# 获取当前时间并格式化
+current_time = time.strftime("%Y%m%d_%H%M%S", time.localtime())
+
+# 定义日志文件名
+log_filename = f"../log/log_WaAct/{current_time}.log"
+
+# 配置日志记录器
+logging.basicConfig(
+    level=logging.INFO,  # 设置日志级别
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',  # 日志格式
+    handlers=[
+        logging.FileHandler(log_filename, encoding='utf-8'),  # 文件处理器
+        logging.StreamHandler()  # 控制台处理器
+    ]
+)
 
 class WaAct:
-    def __init__(self):
-        pass
+    def __init__(self, API_type):
+        self.API_type = API_type
 
     def run(self, requirement):
         requirement_analysis = RequirementAnalysis()
 
         # Note 执行需求层，获取修改
         req, req_gherkin = requirement_analysis.requirement_run(requirement)
-        print(req)
-        print(req_gherkin)
+        logging.info("Original Requirement:\n" + req)
+        logging.info("Gherkin Scenarios:\n"+req_gherkin)
 
+        # Note 执行设计层，获取任务规划和伪代码
+        design = Design()
+        task_plan, pseudocode = design.design_run(req, req_gherkin)
+        logging.info("Task Plan:\n" + task_plan)
+        logging.info("Pseudocode:\n" + pseudocode)
+
+        debugging = Debugging()
 
         ERROR = True
-        FIRST_RUN = True
+        IMPL_ERROR = False
+        count = 0
 
-        while ERROR:
-            if FIRST_RUN:
-                # Note 执行设计层，获取任务规划和伪代码
-                design = Design()
-                task_plan, pseudocode = design.design_run(req, req_gherkin)
-                print(task_plan)
-                print(pseudocode)
+        executable_code = ''
 
+        while ERROR and count < 30:
+            # 首次执行，或伪代码已被修改，需要根据伪代码生成可运行的代码
+            impl = Implementation(self.API_type)
+            if not IMPL_ERROR:
                 # Note 执行实现层，获取可执行代码
-                impl = Implementation('tmdb')
                 executable_code = impl.code_generation(task_plan, req, req_gherkin, pseudocode)
-                print(executable_code)
-                result = impl.run_code(executable_code)
-                print(result)
-                if result.stdout:
-                    acceptance = Acceptance()
-                    accept = acceptance.accept_validation(req, req_gherkin, result)
+                logging.info("Executable Code:\n" + executable_code)
+            result = impl.run_code(executable_code)
+            response = result.stdout
+            if result.stdout:
+                # Note 进行验收测试，判断是否通过
+                acceptance = Acceptance()
+                accept, reason = acceptance.accept_validation(req, req_gherkin, response)
 
-                    if accept == 'true':
-                        return result
-                    else:
-                        pass
-                    pass
+                if accept is True:
+                    logging.info("Acceptance Test Passed!")
+                    return response
+                else:
+                    # Note 根据验收测试不通过的原因，修改伪代码
+                    logging.warning("Acceptance Test Failed!")
+                    API_doc = API_util.get_API_documentation_pseudocode_fix(task_plan, self.API_type)
+                    pseudocode = debugging.pseudocode_fix_acceptance(req, req_gherkin, pseudocode, reason, response, API_doc)
+                    logging.info("Fixed Pseudocode in the Acceptance Test:\n" + pseudocode)
+                    count += 1
+                    continue
 
-                if result.stderr:
-                    error_message = result.stderr
-                    print(result.stderr)
-                    pass
-
+            if result.stderr:
+                error_message = result.stderr
+                logging.error(result.stderr)
+                # Note 进行错误分析，判断错误是设计层还是实现层
+                API_doc = API_util.get_API_documentation_pseudocode_fix(task_plan, self.API_type)
+                error_report = json.loads(debugging.error_analysis(req,req_gherkin, pseudocode,executable_code,error_message, API_doc))
+                logging.info("error_report:\n" + error_report)
+                error_aspect = error_report.get("error_aspect")
+                error_description = error_report.get("error_description")
+                if error_aspect == "Design":
+                    # Note 错误判断为设计层，对设计阶段的伪代码进行修复
+                    pseudocode = debugging.pseudocode_fix_debugging(req, req_gherkin, pseudocode, executable_code, error_message, error_description, API_doc)
+                    logging.info("Fixed Pseudocode in the Implementation:\n" + pseudocode)
+                    count += 1
+                    continue
+                if error_aspect == "Implementation":
+                    # Note 错误判断为实现层，对实现层的可执行代码进行修复
+                    API_doc_impl = API_util.get_documentation_implementation(task_plan, self.API_type)
+                    executable_code = debugging.code_fix(req, req_gherkin, pseudocode, executable_code, error_message, error_description, API_doc)
+                    logging.info("Fixed Executable Code in the Implementation:\n" + executable_code)
+                    IMPL_ERROR = True
+                    count += 1
+                    continue
+        if count == 30:
+            return "Failed"
 
 
 if __name__ == '__main__':
 
-    des_dd = WaAct()
+    des_dd = WaAct('tmdb')
     requirement = "Give me the number of movies directed by Sofia Coppola."
     result = des_dd.run(requirement)
-#
-#     # requirement_gherkin = des_dd.run(requirement)
-#     # print(requirement_gherkin)
-#
-#     requirement_gherkin = '''\
-# ```gherkin
-# Feature: Retrieve movie count by director
-#
-#   Scenario: Get number of movies directed by Sofia Coppola
-#     Given a database of movies and directors
-#     When I request the count of movies directed by "Sofia Coppola"
-#     Then I should receive the correct number of movies
-# ```'''
-#
-#     task_plan = '''```json
-# [
-#   {
-#     "task": "Search for Sofia Coppola's person details",
-#     "Primary API": "GET /search/person",
-#     "Alternative APIs": ["GET /person/popular"]
-#   },
-#   {
-#     "task": "Retrieve Sofia Coppola's person ID",
-#     "Primary API": "GET /person/{person_id}",
-#     "Alternative APIs": []
-#   },
-#   {
-#     "task": "Retrieve Sofia Coppola's movie credits",
-#     "Primary API": "GET /person/{person_id}/movie_credits",
-#     "Alternative APIs": ["GET /credit/{credit_id}"]
-#   },
-#   {
-#     "task": "Count the number of movies directed by Sofia Coppola",
-#     "Primary API": "GET /person/{person_id}/movie_credits",
-#     "Alternative APIs": []
-#   }
-# ]
-# ```
-# '''
-#
-#     pseudocode = '''```pseudocode
-# FUNCTION get_movie_count_by_director(director_name):
-#     // Step 1: Search for the director by name to get their ID
-#     search_results = CALL_API GET /search/person WITH PARAMS {
-#         query: director_name
-#     }
-#
-#     // Step 2: Find the correct person in search results (filter by known_for_department if available)
-#     director_id = NULL
-#     FOR EACH person IN search_results.results:
-#         IF person.known_for_department == "Directing" AND person.name == director_name:
-#             director_id = person.id
-#             BREAK
-#
-#     IF director_id IS NULL:
-#         RETURN ERROR "Director not found"
-#
-#     // Step 3: Get all movie credits for the director
-#     movie_credits = CALL_API GET /person/{director_id}/movie_credits
-#
-#     // Step 4: Filter and count only directing credits
-#     movie_count = 0
-#     FOR EACH movie IN movie_credits.crew:
-#         IF movie.job == "Director":
-#             movie_count = movie_count + 1
-#
-#     RETURN movie_count
-#
-# // Main execution
-# movie_count = get_movie_count_by_director("Sofia Coppola")
-# OUTPUT movie_count
-# ```'''
-#     design = Design()
-#     # # plan = design.task_plan(requirement,requirement_gherkin)
-#     # # print(plan)
-#     #
-#     pseudocode = design.pseudocode_generation(requirement, requirement_gherkin, task_plan)
-#     print(pseudocode)
-#
-#     # API_documentation = des_dd.get_API_documentation_implementation(task_plan)
-#     API_documentation = API_util.get_documentation_implementation(task_plan, "tmdb")
-#     print(API_documentation)
-#
-#     #
-#     Implementation = Implementation('tmdb')
-#     executable_code = Implementation.code_generation(requirement, API_documentation, pseudocode, "tmdb")
-#     print(executable_code)
-#     # print(pseudocode)
-#     executable_code = Implementation.code_generation(requirement, API_documentation, pseudocode, "tmdb")
-#     print(executable_code)
-#     # print(pseudocode)
+    print(result)
+
 
 
