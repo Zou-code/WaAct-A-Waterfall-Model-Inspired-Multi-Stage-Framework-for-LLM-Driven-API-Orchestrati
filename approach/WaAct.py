@@ -64,8 +64,9 @@ class WaAct:
                 executable_code = impl.code_generation(task_plan, req, req_gherkin, pseudocode)
                 logging.info("Executable Code:\n" + executable_code)
             result = impl.run_code(executable_code)
-            response = result.stdout
             if result.stdout:
+	response = result.stdout
+	logging.info(response)
                 # Note 进行验收测试，判断是否通过
                 acceptance = Acceptance()
                 accept, reason = acceptance.accept_validation(req, req_gherkin, response)
