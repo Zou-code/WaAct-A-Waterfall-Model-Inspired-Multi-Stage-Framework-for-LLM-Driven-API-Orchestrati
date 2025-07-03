@@ -1,5 +1,5 @@
-﻿# school:JXNU
-# author:zouzhou
+﻿# school:
+# author:
 # createTime: 2025/5/12 16:22
 import pandas as pd
 
